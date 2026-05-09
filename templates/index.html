@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ASL Recognition</title>
+    <style>
+       
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+    margin: 0;
+    font-family: 'Courier New', monospace;
+    background: #e5e5e5;
+    color: #111;
+}
+
+/* Main container */
+.app {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* Title */
+.title {
+    margin: 10px;
+    font-size: 28px;
+}
+
+/* Camera */
+.camera-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 10px 0;
+}
+
+.camera {
+    width: 480px;   
+    height: 360px;  
+    border: 2px solid black;
+    background: black;
+}
+.camera {
+    width: 50vw;
+    max-width: 520px;
+    height: auto;
+    aspect-ratio: 4 / 3;
+    border: 2px solid black;
+}
+
+/* Output */
+.output {
+    width: 80%;
+    max-width: 600px;
+    font-size: 20px;
+    margin-top: 10px;
+}
+
+/* Suggestions */
+.suggestions {
+    width: 80%;
+    max-width: 600px;
+    margin-top: 10px;
+}
+
+.label {
+    color: red;
+    font-weight: bold;
+}
+
+/* Suggestion buttons */
+#suggestionList {
+    display: flex;
+    gap: 20px;
+    margin-top: 5px;
+}
+
+.suggestion-btn {
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid black;
+    font-size: 18px;
+    cursor: pointer;
+}
+
+/* Controls */
+.controls {
+    margin-top: 15px;
+    display: flex;
+    gap: 10px;
+}
+
+button {
+    padding: 6px 12px;
+    font-size: 14px;
+    cursor: pointer;
+}
+.progress-section {
+    width: 80%;
+    max-width: 600px;
+    margin-top: 10px;
+}
+
+.progress-container {
+    width: 100%;
+    height: 20px;
+    background: #d1d5db;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+
+.progress-bar {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(to right, #22c55e, #16a34a);
+    transition: width 0.08s linear;
+}
+</style>
+
+</head>
+
+<body>
+<div class="app">
+
+    <h1 class="title">Sign Language To Text Conversion</h1>
+
+    <!-- Camera Center -->
+    <div class="camera-container">
+        <img src="{{ url_for('video_feed') }}" class="camera">
+    </div>
+
+    <!-- Output Section -->
+    <div class="output">
+
+        <p><b>Character :</b> <span id="currentChar">-</span></p>
+        <div class="progress-section">
+            <p><b>Capture Progress</b></p>
+
+            <div class="progress-container">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+        </div>
+        <p><b>Sentence :</b> 
+            <span id="sentence">-</span>
+        </p>
+
+    </div>
+
+    <!-- Suggestions -->
+    <div class="suggestions">
+        <span class="label">Suggestions :</span>
+        <div id="suggestionList"></div>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls">
+        <button onclick="backspace()">Back</button>
+        <button onclick="addSpace()">Space</button>
+        <button onclick="clearText()">Clear</button>
+    </div>
+
+</div>
+
+
+<script>
+function send(endpoint) {
+    fetch(endpoint, { method: "POST" });
+}
+function backspace() {
+    send("/backspace");
+}
+
+function addSpace() {
+    send("/space");
+}
+
+function clearText() {
+    send("/clear");
+}
+
+function fetchSuggestions() {
+    fetch("/recommendations")
+        .then(res => res.json())
+        .then(data => {
+            
+            const box = document.getElementById("suggestionList");
+            box.innerHTML = "";
+
+            data.suggestions.forEach(word => {
+                const btn = document.createElement("div");
+                btn.className = "suggestion-btn";
+                btn.innerText = word;
+                btn.onclick = () => applySuggestion(word);
+                box.appendChild(btn);
+            });
+        });
+}
+
+function applySuggestion(word) {
+    fetch("/apply_suggestion", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ word })
+    });
+} 
+
+function fetchText() {
+    fetch("/get_text")
+        .then(res => res.json())
+        .then(data => {
+            document.getElementById("currentChar").innerText =
+                data.current_char || "-";
+
+            document.getElementById("sentence").innerText =
+                data.sentence || "-";
+
+            document.getElementById("progressBar").style.width =
+            data.progress + "%";
+        });
+}
+setInterval(fetchSuggestions, 1000);
+setInterval(fetchText, 200);
+</script>
+
+</body>
+</html>
