@@ -27,7 +27,7 @@ Real-time American Sign Language recognition system using TensorFlow, OpenCV, Fl
 
 ## Team Members
 - Inderdeep Kaur
-- Raghav Sharma 
+- Nitin Sharma 
 
 ## Run Locally
 
