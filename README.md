@@ -25,6 +25,10 @@ Real-time American Sign Language recognition system using TensorFlow, OpenCV, Fl
 - Flask
 - HTML/CSS/JavaScript
 
+## Team Members
+- Inderdeep Kaur
+- Raghav Sharma 
+
 ## Run Locally
 
 ```bash
